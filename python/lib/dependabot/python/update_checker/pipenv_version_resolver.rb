@@ -19,11 +19,11 @@ module Dependabot
   module Python
     class UpdateChecker
       class PipenvVersionResolver
-        GIT_DEPENDENCY_UNREACHABLE_REGEX = /git clone --filter=blob:none (?<url>[^\s]+).*/
+        GIT_DEPENDENCY_UNREACHABLE_REGEX = /git clone --filter=blob:none --quiet (?<url>[^\s]+).*/
         GIT_REFERENCE_NOT_FOUND_REGEX = /git checkout -q (?<tag>[^\s]+).*/
         PIPENV_INSTALLATION_ERROR = "python setup.py egg_info exited with 1"
         PIPENV_INSTALLATION_ERROR_REGEX =
-          /[\s\S]*Collecting\s(?<name>.+)\s\(from\s-r.+\)[\s\S]*#{Regexp.quote(PIPENV_INSTALLATION_ERROR)}/
+          /[\s\S]*Collecting\s(?<name>.+)\s\(from\s-r.+\)[\s\S]*#{Regexp.quote(PIPENV_INSTALLATION_ERROR)}/m
 
         PIPENV_RANGE_WARNING = /Warning:\sPython\s[<>].* was not found/
 
@@ -90,6 +90,19 @@ module Dependabot
             raise DependencyFileNotResolvable, msg
           end
 
+          if error.message.match?(GIT_REFERENCE_NOT_FOUND_REGEX)
+            tag = error.message.match(GIT_REFERENCE_NOT_FOUND_REGEX).named_captures.fetch("tag")
+            # Unfortunately the error message doesn't include the package name.
+            # TODO: Talk with pipenv maintainers about exposing the package name, it used to be part of the error output
+            raise GitDependencyReferenceNotFound, "(unknown package at #{tag})"
+          end
+
+          if error.message.match?(GIT_DEPENDENCY_UNREACHABLE_REGEX)
+            url = error.message.match(GIT_DEPENDENCY_UNREACHABLE_REGEX)
+                       .named_captures.fetch("url")
+            raise GitDependenciesNotReachable, url
+          end
+
           if error.message.include?("Could not find a version") || error.message.include?("ResolutionFailure")
             check_original_requirements_resolvable
           end
@@ -117,19 +130,6 @@ module Dependabot
             # The latest version of the dependency we're updating to needs a
             # different Python version. Skip the update.
             return if error.message.match?(/#{Regexp.quote(dependency.name)}/i)
-          end
-
-          if error.message.match?(GIT_REFERENCE_NOT_FOUND_REGEX)
-            tag = error.message.match(GIT_REFERENCE_NOT_FOUND_REGEX).named_captures.fetch("tag")
-            # Unfortunately the error message doesn't include the package name.
-            # TODO: Talk with pipenv maintainers about exposing the package name, it used to be part of the error output
-            raise GitDependencyReferenceNotFound, "(unknown package at #{tag})"
-          end
-
-          if error.message.match?(GIT_DEPENDENCY_UNREACHABLE_REGEX)
-            url = error.message.match(GIT_DEPENDENCY_UNREACHABLE_REGEX)
-                       .named_captures.fetch("url")
-            raise GitDependenciesNotReachable, url
           end
 
           raise unless error.message.include?("could not be resolved")
@@ -178,10 +178,6 @@ module Dependabot
             raise DependencyFileNotResolvable, msg
           end
 
-          # NOTE: Pipenv masks the actual error, see this issue for updates:
-          # https://github.com/pypa/pipenv/issues/2791
-          # TODO: This may no longer be reproducible on latest pipenv, see linked issue,
-          # so investigate when we next bump to newer pipenv...
           handle_pipenv_installation_error(error.message) if error.message.match?(PIPENV_INSTALLATION_ERROR_REGEX)
 
           # Raise an unhandled error, as this could be a problem with
