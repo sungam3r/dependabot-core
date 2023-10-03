@@ -2,5 +2,6 @@
 
 set -e
 
+bundle config gemfile ../dependabot-updater/Gemfile
 bundle install
 bundle exec rspec spec

@@ -2,6 +2,7 @@
 
 set -e
 
+bundle config gemfile ../dependabot-updater/Gemfile
 bundle install
 bundle exec turbo_tests --verbose
 

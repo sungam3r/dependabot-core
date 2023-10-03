@@ -4,5 +4,6 @@ set -e
 
 pyenv exec flake8 helpers/. --count --exclude=./.*,./python/spec/fixtures --show-source --statistics
 
+bundle config gemfile ../dependabot-updater/Gemfile
 bundle install
 bundle exec turbo_tests --verbose
