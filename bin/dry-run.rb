@@ -68,7 +68,7 @@ $LOAD_PATH << "./swift/lib"
 $LOAD_PATH << "./terraform/lib"
 
 require "bundler"
-ENV["BUNDLE_GEMFILE"] = File.join(__dir__, "../omnibus/Gemfile")
+ENV["BUNDLE_GEMFILE"] = File.join(__dir__, "../dependabot-updater/Gemfile")
 Bundler.setup
 
 require "optparse"
