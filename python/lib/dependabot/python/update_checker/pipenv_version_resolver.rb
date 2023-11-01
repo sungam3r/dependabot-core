@@ -160,7 +160,7 @@ module Dependabot
         end
 
         def handle_pipenv_errors_resolving_original_reqs(error)
-          if error.message.include?("Could not find a version") ||
+          if /Could\s+not\s+find\s+a\s+version/.match?(error.message) ||
              error.message.include?("package versions have conflicting dependencies")
             msg = clean_error_message(error.message)
             msg.gsub!(/\s+\(from .*$/, "")
