@@ -112,6 +112,11 @@ module Dependabot
             "error-type": "git_dependencies_not_reachable",
             "error-detail": { "dependency-urls": error.dependency_urls }
           }
+        when Dependabot::MisconfiguredTool
+          {
+            "error-type": "misconfigured_tool",
+            "error-detail": { "tool-name": error.tool_name, message: error.message }
+          }
         when Dependabot::NotImplemented
           {
             "error-type": "not_implemented",

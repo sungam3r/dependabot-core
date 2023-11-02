@@ -109,6 +109,27 @@ module Dependabot
   # File level errors #
   #####################
 
+  class MisconfiguredTool < DependabotError
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :tool_name
+
+    sig do
+      params(
+        tool_name: String,
+        msg: String
+      ).void
+    end
+    def initialize(tool_name, msg)
+      @tool_name = tool_name
+
+      msg = "Dependabot detected that #{tool_name} is misconfigured in this repository. " \
+            "Running `#{tool_name.downcase}` results in the following error: #{msg}"
+      super(msg)
+    end
+  end
+
   class ToolVersionNotSupported < DependabotError
     extend T::Sig
 

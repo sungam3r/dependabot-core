@@ -4,6 +4,8 @@
 module Dependabot
   module NpmAndYarn
     module Helpers
+      YARN_PATH_NOT_FOUND = /^.*(?<error>The "yarn-path" option has been set.*)/
+
       def self.npm_version(lockfile_content)
         "npm#{npm_version_numeric(lockfile_content)}"
       end
@@ -53,6 +55,15 @@ module Dependabot
       def self.yarn_major_version
         output = SharedHelpers.run_shell_command("yarn --version")
         Version.new(output).major
+      rescue SharedHelpers::HelperSubprocessFailed => e
+        message = e.message
+
+        if YARN_PATH_NOT_FOUND.match?(message)
+          error = T.must(T.must(YARN_PATH_NOT_FOUND.match(message))[:error]).gsub(Dir.pwd, ".")
+          raise MisconfiguredTool.new("Yarn", error)
+        end
+
+        raise
       end
 
       def self.yarn_zero_install?
