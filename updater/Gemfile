@@ -37,6 +37,7 @@ group :test do
   deps_shared_with_core = %w(
     debug
     rspec
+    rspec-sorbet
     rubocop
     rubocop-performance
     rubocop-sorbet

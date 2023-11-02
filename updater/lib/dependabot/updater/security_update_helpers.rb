@@ -1,5 +1,7 @@
-# typed: false
+# typed: strict
 # frozen_string_literal: true
+
+require "sorbet-runtime"
 
 # This module extracts all helpers required to perform additional update job
 # error recording and logging for Security Updates since they are shared
@@ -7,6 +9,12 @@
 module Dependabot
   class Updater
     module SecurityUpdateHelpers
+      extend T::Sig
+      extend T::Helpers
+
+      requires_ancestor { Dependabot::Updater::Operations::Base }
+
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_security_update_not_needed_error(checker)
         Dependabot.logger.info(
           "no security update needed as #{checker.dependency.name} " \
@@ -21,6 +29,7 @@ module Dependabot
         )
       end
 
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_security_update_ignored(checker)
         Dependabot.logger.info(
           "Dependabot cannot update to the required version as all versions " \
@@ -35,6 +44,7 @@ module Dependabot
         )
       end
 
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_dependency_file_not_supported_error(checker)
         Dependabot.logger.info(
           "Dependabot can't update vulnerable dependencies for projects " \
@@ -50,6 +60,7 @@ module Dependabot
         )
       end
 
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_security_update_not_possible_error(checker)
         latest_allowed_version =
           (checker.lowest_resolvable_security_fix_version ||
@@ -76,6 +87,7 @@ module Dependabot
         )
       end
 
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_security_update_not_found(checker)
         Dependabot.logger.info(
           "Dependabot can't find a published or compatible non-vulnerable " \
@@ -93,6 +105,7 @@ module Dependabot
         )
       end
 
+      sig { params(checker: Dependabot::UpdateCheckers::Base).void }
       def record_pull_request_exists_for_latest_version(checker)
         service.record_update_job_error(
           error_type: "pull_request_exists_for_latest_version",
@@ -104,6 +117,7 @@ module Dependabot
         )
       end
 
+      sig { params(existing_pull_request: T::Array[T::Hash[String, T.untyped]]).void }
       def record_pull_request_exists_for_security_update(existing_pull_request)
         updated_dependencies = existing_pull_request.map do |dep|
           {
@@ -121,6 +135,7 @@ module Dependabot
         )
       end
 
+      sig { void }
       def record_security_update_dependency_not_found
         service.record_update_job_error(
           error_type: "security_update_dependency_not_found",
@@ -128,6 +143,7 @@ module Dependabot
         )
       end
 
+      sig { params(lowest_non_vulnerable_version: T.nilable(String)).void }
       def earliest_fixed_version_message(lowest_non_vulnerable_version)
         if lowest_non_vulnerable_version
           "The earliest fixed version is #{lowest_non_vulnerable_version}."
@@ -136,6 +152,14 @@ module Dependabot
         end
       end
 
+      sig do
+        params(
+          checker: Dependabot::UpdateCheckers::Base,
+          latest_allowed_version: T.nilable(String),
+          conflicting_dependencies: T::Array[T::Hash[String, String]]
+        )
+          .returns(String)
+      end
       def security_update_not_possible_message(checker, latest_allowed_version,
                                                conflicting_dependencies)
         if conflicting_dependencies.any?
