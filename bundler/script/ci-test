@@ -2,9 +2,6 @@
 
 set -e
 
-root=$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-
-bundle config gemfile "$root/dependabot-updater/Gemfile"
 bundle install
 bundle exec turbo_tests --verbose
 

@@ -1,8 +1,6 @@
 ARG FROM_IMAGE=ghcr.io/dependabot/dependabot-updater-core
 FROM $FROM_IMAGE
 
-ARG ECOSYSTEM
-
 # Temporarily switch to root user in order to install packages
 USER root
 RUN apt-get update \

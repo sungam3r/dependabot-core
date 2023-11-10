@@ -62,7 +62,6 @@ build_image() {
   docker build \
     --build-arg BUILDKIT_INLINE_CACHE=1 \
     --build-arg "FROM_IMAGE=$UPDATER_IMAGE_NAME" \
-    --build-arg "ECOSYSTEM=$ECOSYSTEM" \
     -t "$IMAGE_NAME" \
     -f "$DOCKERFILE" \
     .

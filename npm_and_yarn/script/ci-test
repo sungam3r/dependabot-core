@@ -2,7 +2,6 @@
 
 set -e
 
-bundle config gemfile ../dependabot-updater/Gemfile
 bundle install
 export YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn
 bundle exec turbo_tests --verbose
