@@ -152,6 +152,7 @@ module Functions
     Bundler.ui = Bundler::UI::Silent.new
 
     Bundler.settings.set_command_option("forget_cli_options", "true")
+    Bundler.settings.set_command_option("frozen", "false")
   end
 
   def self.relevant_credentials(credentials)

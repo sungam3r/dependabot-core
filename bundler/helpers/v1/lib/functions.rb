@@ -148,6 +148,7 @@ module Functions
 
     # Use HTTPS for GitHub if lockfile
     Bundler.settings.set_command_option("github.https", "true")
+    Bundler.settings.set_command_option("frozen", "false")
   end
 
   def self.relevant_credentials(credentials)
